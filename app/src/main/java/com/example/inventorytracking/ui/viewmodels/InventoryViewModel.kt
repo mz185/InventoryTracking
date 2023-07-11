@@ -10,9 +10,7 @@ import com.example.inventorytracking.ds.Message
 import com.example.inventorytracking.models.Item
 import com.example.inventorytracking.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -43,17 +41,13 @@ class InventoryViewModel @Inject constructor(
 
     private fun fetchItemsAndValue() {
         viewModelScope.launch {
-            withContext(IO) {
-                inventoryRepository.getInventory()
-            }.onSuccess { itemList ->
+            inventoryRepository.getInventory().onSuccess { itemList ->
                 _items.postValue(itemList.associateBy { it.name })
             }.onFailure { e ->
                 msg.postValue(Message.failure(e.message ?: ""))
             }
 
-            withContext(IO) {
-                inventoryRepository.calculateTotalValue()
-            }.onSuccess { totalValue ->
+            inventoryRepository.calculateTotalValue().onSuccess { totalValue ->
                 _totalValue.postValue(totalValue?.toString() ?: "0")
             }.onFailure { e ->
                 msg.postValue(Message.failure(e.message ?: ""))
@@ -84,7 +78,7 @@ class InventoryViewModel @Inject constructor(
                 }
             }
         } else {
-            msg.postValue(Message.failure("All fields must be provided."))
+            msg.postValue(Message.failure("Invalid field data."))
         }
     }
 
@@ -130,7 +124,7 @@ class InventoryViewModel @Inject constructor(
                 }
             }
         } else {
-            msg.postValue(Message.failure("Quantity cannot be empty."))
+            msg.postValue(Message.failure("Invalid quantity format."))
         }
     }
 }
